@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>303번 버스 · 지금 탈 수 있는 버스</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700;800&display=swap">
+<style>
+  :root{
+    --bg:#F2F4F6; --card:#FFFFFF; --ink:#191F28; --ink2:#333D4B; --sub:#4E5968; --mute:#8B95A1; --faint:#B0B8C1;
+    --line:#E5E8EB; --fill:#F2F4F6; --fill2:#F9FAFB;
+    --blue:#3182F6; --blue-d:#1B64DA; --blue-l:#E8F3FF; --red:#F04452; --orange:#FF8A3D; --orange-l:#FFF3E9;
+    --c60:#00A661; --c61:#3182F6; --c62:#8B5CF6;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{margin:0}
+  body{background:var(--bg);color:var(--ink);font-family:"Pretendard Variable",Pretendard,-apple-system,"Apple SD Gothic Neo","Noto Sans KR","Malgun Gothic",sans-serif;
+    -webkit-font-smoothing:antialiased;letter-spacing:-.01em;line-height:1.45}
+  button{font:inherit;color:inherit;border:0;background:none;cursor:pointer;padding:0}
+  .app{max-width:560px;margin:0 auto;padding:20px 16px 56px}
+
+  /* header */
+  .top{padding:12px 6px 18px}
+  .top .eyebrow{display:inline-flex;align-items:center;gap:6px;font-size:14px;font-weight:600;color:var(--sub)}
+  .top .eyebrow i{font-style:normal;background:var(--ink);color:#fff;border-radius:6px;padding:1px 7px;font-size:13px}
+  .top h1{margin:10px 0 0;font-size:26px;line-height:1.3;font-weight:700;letter-spacing:-.03em}
+
+  .card{background:var(--card);border-radius:22px;padding:20px;margin-bottom:12px}
+  .card h2{margin:0 0 14px;font-size:18px;font-weight:700;letter-spacing:-.02em}
+  .card h2 small{font-size:14px;font-weight:500;color:var(--mute);margin-left:4px}
+
+  /* search */
+  .search{position:relative}
+  .search input{width:100%;height:54px;border:0;border-radius:14px;background:var(--fill);padding:0 44px 0 46px;font:inherit;font-size:17px;font-weight:500;color:var(--ink);outline:none;transition:box-shadow .15s}
+  .search input::placeholder{color:var(--faint)}
+  .search input:focus{box-shadow:inset 0 0 0 2px var(--blue);background:#fff}
+  .search .ico{position:absolute;left:16px;top:50%;transform:translateY(-50%);color:var(--mute)}
+  .search .clr{position:absolute;right:12px;top:50%;transform:translateY(-50%);width:24px;height:24px;border-radius:50%;background:var(--faint);color:#fff;font-size:14px;display:none;align-items:center;justify-content:center}
+  .search .clr.show{display:flex}
+  .chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}
+  .chip{height:38px;padding:0 14px;border-radius:12px;background:var(--fill);font-size:15px;font-weight:600;color:var(--ink2);transition:background .12s,transform .08s}
+  .chip:hover{background:#E5E8EB}
+  .chip:active{transform:scale(.97)}
+  .chip mark{background:none;color:var(--blue)}
+  .chips-label{font-size:13px;color:var(--mute);font-weight:600;margin:16px 0 -4px}
+  .empty-s{color:var(--mute);font-size:15px;padding:10px 2px}
+
+  .picked{display:flex;align-items:center;gap:12px}
+  .picked .pin{width:44px;height:44px;border-radius:14px;background:var(--blue-l);display:flex;align-items:center;justify-content:center;flex:none}
+  .picked .txt{flex:1;min-width:0}
+  .picked .txt small{display:block;font-size:13px;color:var(--mute);font-weight:500}
+  .picked .txt b{font-size:20px;font-weight:700;letter-spacing:-.02em}
+  .btn-ghost{height:36px;padding:0 14px;border-radius:10px;background:var(--fill);font-size:14px;font-weight:600;color:var(--sub)}
+
+  /* hero next bus */
+  .hero{background:var(--blue);color:#fff;border-radius:22px;padding:22px 20px;margin-bottom:12px;position:relative;overflow:hidden}
+  .hero .lbl{font-size:14px;font-weight:600;opacity:.85}
+  .hero .big{font-size:40px;font-weight:800;letter-spacing:-.04em;line-height:1.15;margin:6px 0 4px}
+  .hero .big span{font-size:22px;font-weight:700;margin-left:2px}
+  .hero .line{display:flex;align-items:center;gap:8px;font-size:16px;font-weight:600;flex-wrap:wrap}
+  .hero .line .rb{background:rgba(255,255,255,.22);border-radius:7px;padding:1px 8px;font-weight:700}
+  .hero .meta{font-size:13.5px;opacity:.85;margin-top:12px;padding-top:12px;border-top:1px solid rgba(255,255,255,.2)}
+  .hero.none{background:var(--card);color:var(--ink)}
+  .hero.none .lbl{color:var(--mute);opacity:1}
+  .hero.none .big{font-size:26px}
+  .hero.none .meta{border-color:var(--line);color:var(--mute);opacity:1}
+
+  /* segmented */
+  .seg{display:flex;background:var(--fill);border-radius:12px;padding:4px;margin-bottom:14px}
+  .seg button{flex:1;height:36px;border-radius:9px;font-size:14px;font-weight:600;color:var(--mute);transition:.15s}
+  .seg button.on{background:#fff;color:var(--ink);box-shadow:0 1px 3px rgba(0,0,0,.08)}
+
+  /* departures list */
+  .row{display:flex;align-items:center;gap:12px;padding:13px 0;border-top:1px solid var(--fill)}
+  .row:first-child{border-top:0}
+  .rb{display:inline-flex;align-items:center;justify-content:center;min-width:46px;height:26px;border-radius:8px;color:#fff;font-size:13px;font-weight:700;padding:0 7px;flex:none}
+  .row .mid{flex:1;min-width:0}
+  .row .mid b{display:block;font-size:16px;font-weight:700}
+  .row .mid small{display:block;font-size:13px;color:var(--mute);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .row .rt{text-align:right;flex:none}
+  .row .rt b{display:block;font-size:18px;font-weight:700;font-variant-numeric:tabular-nums}
+  .row .rt small{font-size:13px;font-weight:600;color:var(--blue)}
+  .row .rt small.soon{color:var(--red)}
+  .row.past{opacity:.38}
+  .row.past .rt small{color:var(--mute)}
+  .more{width:100%;height:46px;border-radius:12px;background:var(--fill2);color:var(--sub);font-size:14px;font-weight:600;margin-top:8px}
+  .note{font-size:12.5px;color:var(--mute);margin-top:12px;line-height:1.5}
+
+  /* route cards */
+  .sect-title{font-size:15px;font-weight:700;color:var(--sub);margin:26px 8px 10px}
+  .route{background:var(--card);border-radius:22px;padding:20px;margin-bottom:12px}
+  .route-h{display:flex;align-items:center;gap:10px;margin-bottom:6px}
+  .route-h .rb{height:30px;font-size:15px;min-width:54px}
+  .route-h b{font-size:18px;font-weight:700;letter-spacing:-.02em}
+  .route-h small{margin-left:auto;font-size:13px;color:var(--mute);font-weight:500}
+  .dir{padding:16px 0 4px;border-top:1px solid var(--fill);margin-top:12px;transition:opacity .2s,filter .2s}
+  .dir-h{display:flex;align-items:center;gap:6px;font-size:15px;font-weight:700;margin-bottom:10px}
+  .dir-h .tag{font-size:12px;font-weight:600;color:var(--mute);background:var(--fill);border-radius:6px;padding:1px 7px}
+  .dir-h .ok{font-size:12px;font-weight:700;color:var(--blue);background:var(--blue-l);border-radius:6px;padding:1px 7px;margin-left:auto}
+  .stops{display:flex;flex-wrap:wrap;align-items:center;gap:6px 0;font-size:13.5px;color:var(--sub);margin-bottom:14px}
+  .stops span{padding:3px 0}
+  .stops .sep{color:var(--faint);margin:0 6px}
+  .stops .passed{color:var(--faint)}
+  .stops .me{background:var(--blue);color:#fff;border-radius:8px;padding:3px 9px;font-weight:700}
+  .stops .opt{color:var(--orange);font-weight:600}
+  .stops .end{font-weight:700;color:var(--ink)}
+  .times{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
+  .t{background:var(--fill2);border-radius:12px;padding:9px 4px;text-align:center}
+  .t b{display:block;font-size:16px;font-weight:700;font-variant-numeric:tabular-nums;color:var(--ink)}
+  .t small{display:block;font-size:11px;font-weight:600;color:var(--orange);margin-top:1px}
+  .t .est{color:var(--blue)}
+  .t.off{background:var(--fill2)}
+  .t.off b{color:var(--faint);font-weight:500}
+  .t.off small{color:var(--faint)}
+  .t.past b{color:var(--faint);font-weight:500}
+  .t.past small{color:var(--faint)}
+  .t.go{background:var(--blue-l)}
+  .t.go b{color:var(--blue-d)}
+  .t.next{background:var(--blue)}
+  .t.next b,.t.next small,.t.next .est{color:#fff}
+  .dim{opacity:.32;filter:grayscale(1)}
+  .route.dim .dir{opacity:1;filter:none}
+
+  .foot{padding:18px 8px;font-size:13px;color:var(--mute);line-height:1.7}
+  .foot a{color:var(--sub);font-weight:600;text-decoration:none}
+  .foot b{color:var(--sub)}
+
+  @media (max-width:380px){.times{grid-template-columns:repeat(3,1fr)}.hero .big{font-size:34px}}
+</style>
+</head>
+<body>
+<div class="app">
+
+  <div class="top">
+    <div class="eyebrow"><i>303</i> 담양버스터미널 ↔ 용면 농어촌버스</div>
+    <h1 id="title">지금 어디에 계세요?</h1>
+  </div>
+
+  <!-- 정류장 선택 -->
+  <div class="card" id="pickCard"></div>
+
+  <!-- 결과 -->
+  <div id="result"></div>
+
+  <div class="sect-title" id="allTitle">전체 노선</div>
+  <div id="routes"></div>
+
+  <div class="foot">
+    실제 운행시간은 현장 여건 및 도로 교통상황에 따라 다소 차이가 날 수 있어요.<br>
+    시간표 기준일자 2025. 5. 9.<br>
+    <b>문의</b> 담양동광고속 담양지점 <a href="tel:061-382-6823">061-382-6823</a><br>
+    <b>실시간 위치</b> <a href="http://bis.damyang.go.kr" target="_blank" rel="noopener">담양군 BIS bis.damyang.go.kr</a>
+  </div>
+</div>
+
+<script>
+/* ───────── 데이터 (원본 시간표 그대로) ───────── */
+const T='담양버스터미널', O='오정(삼만리입구)';
+const ROUTES=[
+  {id:'60-1', name:'가마골', color:'var(--c60)', dirs:[
+    {to:'가마골', toward:'Y', dur:40,
+     stops:[T,'신남정사거리','관방제림','죽녹원','전남도립대',O,'장찬리입구','두장리입구','용면소재지','항아리','도림리','동원샘물','추월산','월계','복리암','자작골','용치','용동','분통','가마골입구','가마골'],
+     times:['07:00','08:20','10:00','12:00','13:40','15:20','17:50','19:10']},
+    {to:'담양터미널', toward:'T', dur:40,
+     stops:['가마골','가마골입구','분통','용동','용치','자작골','복리암','월계','추월산','동원샘물','도림리','항아리','용면소재지','두장리입구','장찬리입구',O,'전남도립대','죽녹원','신남정사거리',T],
+     times:['07:30','08:55','10:40','12:40','14:30','15:50','18:20','19:40']}
+  ]},
+  {id:'61-1', name:'쌍태리', color:'var(--c61)', dirs:[
+    {to:'쌍태리', toward:'Y', dur:20, optional:['통천','박곡'],
+     stops:[T,'신남정사거리','관방제림','죽녹원','전남도립대','세송',O,'장찬리입구','통천','박곡','신흥리(용면)','쌍태리낚시터','쌍태리 종점'],
+     times:['06:45','07:45',['09:00','통천','박곡'],['10:40','통천','박곡'],['14:00','통천'],'16:00',['18:10','통천'],['19:40','통천']]},
+    {to:'담양터미널', toward:'T', dur:20, optional:['통천','박곡'],
+     stops:['쌍태리 종점','쌍태리낚시터','신흥리(용면)','박곡','통천','장찬리입구',O,'세송','전남도립대','죽녹원','신남정사거리',T],
+     times:[['07:00','통천'],['08:00','통천','박곡'],['09:20','통천','박곡'],'11:00','14:20','16:20','18:40','20:00']}
+  ]},
+  {id:'62-1', name:'반디마을', color:'var(--c62)', dirs:[
+    {to:'반디마을', toward:'Y', dur:20,
+     stops:[T,'신남정사거리','관방제림','죽녹원','전남도립대',O,'장찬리입구','두장리입구','용면초','와산','반디마을(용면)'],
+     times:['07:30','13:00','16:50','18:10']},
+    {to:'담양터미널', toward:'T', dur:20,
+     stops:['반디마을(용면)','와산','용면초','두장리입구','장찬리입구',O,'전남도립대','죽녹원','관방제림','신남정사거리','삼만리',T],
+     times:['07:45','13:20','17:10','18:40']}
+  ]}
+];
+// 표기 통일
+ROUTES.forEach(r=>r.dirs.forEach(d=>{
+  d.route=r; d.optional=d.optional||[];
+  d.trips=d.times.map(x=>Array.isArray(x)?{t:x[0],via:x.slice(1)}:{t:x,via:[]});
+}));
+const POPULAR=[T,'죽녹원','관방제림','전남도립대','용면소재지','추월산','가마골'];
+const ALL_STOPS=[...new Set(ROUTES.flatMap(r=>r.dirs.flatMap(d=>d.stops)))];
+
+/* ───────── 계산 ───────── */
+const toMin=s=>{const[h,m]=s.split(':').map(Number);return h*60+m};
+const fmt=m=>String(Math.floor(m/60)).padStart(2,'0')+':'+String(m%60).padStart(2,'0');
+const nowMin=()=>{const d=new Date();return d.getHours()*60+d.getMinutes()};
+function tripPath(d,trip){return d.stops.filter(s=>!d.optional.includes(s)||trip.via.includes(s))}
+// 이 회차가 정류장에서 탈 수 있는지 + 예상 통과시각(정류장 순서 비례 추정)
+function board(d,trip,stop){
+  const p=tripPath(d,trip), i=p.indexOf(stop);
+  if(i<0||i===p.length-1) return null;           // 미경유 또는 종점(하차만)
+  return toMin(trip.t)+Math.round(d.dur*i/(p.length-1));
+}
+const dirServes=(d,stop)=>d.trips.some(tr=>board(d,tr,stop)!==null);
+
+/* ───────── 상태 ───────── */
+let state={stop:null,q:'',filter:'all',showPast:false,editing:false};
+try{const s=localStorage.getItem('b303.stop'); if(s&&ALL_STOPS.includes(s)) state.stop=s;}catch(e){}
+const h=new URLSearchParams(location.hash.slice(1)).get('stop'); if(h&&ALL_STOPS.includes(h)) state.stop=h;
+
+function setStop(s){
+  state.stop=s; state.q=''; state.editing=false; state.showPast=false;
+  try{s?localStorage.setItem('b303.stop',s):localStorage.removeItem('b303.stop')}catch(e){}
+  render(); window.scrollTo({top:0,behavior:'smooth'});
+}
+
+/* ───────── 렌더 ───────── */
+const $=id=>document.getElementById(id);
+const esc=s=>s.replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const PIN='<svg width="22" height="22" viewBox="0 0 24 24" fill="#3182F6"><path d="M12 2a7 7 0 0 0-7 7c0 5.2 7 13 7 13s7-7.8 7-13a7 7 0 0 0-7-7Zm0 9.5A2.5 2.5 0 1 1 12 6.5a2.5 2.5 0 0 1 0 5Z"/></svg>';
+
+function renderPick(){
+  const c=$('pickCard');
+  if(state.stop && !state.editing){
+    c.innerHTML=`<div class="picked"><div class="pin">${PIN}</div>
+      <div class="txt"><small>현재 위치</small><b>${esc(state.stop)}</b></div>
+      <button class="btn-ghost" id="chg">변경</button></div>`;
+    $('chg').onclick=()=>{state.editing=true;render();setTimeout(()=>$('q').focus(),0)};
+    return;
+  }
+  const q=state.q.trim();
+  const list=q?ALL_STOPS.filter(s=>s.replace(/\s/g,'').includes(q.replace(/\s/g,''))):null;
+  const chip=s=>{const lbl=q?esc(s).replace(esc(q),`<mark>${esc(q)}</mark>`):esc(s);return `<button class="chip" data-s="${esc(s)}">${lbl}</button>`};
+  c.innerHTML=`<div class="search">
+      <svg class="ico" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+      <input id="q" placeholder="정류장 이름을 입력하세요" value="${esc(state.q)}" autocomplete="off">
+      <button class="clr ${q?'show':''}" id="clr">✕</button></div>
+    ${list
+      ? (list.length?`<div class="chips">${list.map(chip).join('')}</div>`:`<div class="empty-s">‘${esc(q)}’ 정류장을 찾지 못했어요</div>`)
+      : `<div class="chips-label">많이 찾는 정류장</div><div class="chips">${POPULAR.map(chip).join('')}</div>
+         <div class="chips-label">전체 정류장</div><div class="chips">${ALL_STOPS.filter(s=>!POPULAR.includes(s)).map(chip).join('')}</div>`}
+    ${state.stop?`<button class="more" id="cancel">취소</button>`:''}`;
+  const inp=$('q');
+  inp.oninput=e=>{state.q=e.target.value;const pos=e.target.selectionStart;renderPick();const n=$('q');n.focus();n.setSelectionRange(pos,pos)};
+  inp.onkeydown=e=>{if(e.key==='Enter'){const f=c.querySelector('.chip');if(f)setStop(f.dataset.s)}};
+  $('clr').onclick=()=>{state.q='';renderPick();$('q').focus()};
+  if($('cancel')) $('cancel').onclick=()=>{state.editing=false;state.q='';render()};
+  c.querySelectorAll('.chip').forEach(b=>b.onclick=()=>setStop(b.dataset.s));
+}
+
+function deps(){ // 선택 정류장에서 탈 수 있는 모든 회차
+  const out=[];
+  ROUTES.forEach(r=>r.dirs.forEach(d=>d.trips.forEach(tr=>{
+    const m=board(d,tr,state.stop); if(m!==null) out.push({d,tr,m});
+  })));
+  return out.sort((a,b)=>a.m-b.m);
+}
+const towardLbl=d=>d.toward==='T'?'담양터미널 방면':'용면 방면';
+
+function renderResult(){
+  const el=$('result');
+  if(!state.stop||state.editing){el.innerHTML='';$('title').textContent='지금 어디에 계세요?';return}
+  const now=nowMin();
+  let all=deps();
+  const hasT=all.some(x=>x.d.toward==='T'), hasY=all.some(x=>x.d.toward==='Y');
+  if(!(hasT&&hasY)) state.filter='all';
+  const list=all.filter(x=>state.filter==='all'||x.d.toward===state.filter);
+  const up=list.filter(x=>x.m>=now), past=list.filter(x=>x.m<now);
+  const n=up[0];
+  $('title').innerHTML=n?`${esc(state.stop)}에서<br>탈 수 있는 버스예요`:`${esc(state.stop)}에서<br>오늘 남은 버스가 없어요`;
+
+  const left=n?n.m-now:0;
+  const hero=n?`<div class="hero">
+      <div class="lbl">다음 버스</div>
+      <div class="big">${left===0?'곧 도착':left<60?left+'<span>분 후</span>':Math.floor(left/60)+'<span>시간 </span>'+(left%60?(left%60)+'<span>분 후</span>':'<span>후</span>')}</div>
+      <div class="line"><span class="rb">${n.d.route.id}</span>${esc(n.d.to)}행 · 약 ${fmt(n.m)} 통과</div>
+      <div class="meta">${n.d.stops[0]===T?'담양터미널':esc(n.d.stops[0])} ${n.tr.t} 출발${n.tr.via.length?` · ${n.tr.via.join('·')} 경유`:''}</div>
+    </div>`
+    :`<div class="hero none"><div class="lbl">다음 버스</div><div class="big">오늘 운행이 끝났어요</div>
+      <div class="meta">${all.length?`첫차는 ${all[0].d.route.id} ${esc(all[0].d.to)}행, 약 ${fmt(all[0].m)}이에요`:'이 정류장에서 출발하는 버스가 없어요 (종점 하차만 가능)'}</div></div>`;
+
+  const row=(x,isPast)=>{const l=x.m-now;
+    return `<div class="row ${isPast?'past':''}">
+      <span class="rb" style="background:${x.d.route.color}">${x.d.route.id}</span>
+      <div class="mid"><b>${esc(x.d.to)}행</b><small>${towardLbl(x.d)} · 출발 ${x.tr.t}${x.tr.via.length?' · '+x.tr.via.join('·')+' 경유':''}</small></div>
+      <div class="rt"><b>${fmt(x.m)}</b><small class="${!isPast&&l<=10?'soon':''}">${isPast?'지나감':l===0?'곧 도착':l<60?l+'분 후':Math.floor(l/60)+'시간 '+(l%60?l%60+'분 ':'')+'후'}</small></div>
+    </div>`};
+
+  el.innerHTML=hero+`<div class="card">
+    <h2>오늘 남은 버스 <small>${up.length}대</small></h2>
+    ${hasT&&hasY?`<div class="seg">
+      <button data-f="all" class="${state.filter==='all'?'on':''}">전체</button>
+      <button data-f="T" class="${state.filter==='T'?'on':''}">담양터미널 방면</button>
+      <button data-f="Y" class="${state.filter==='Y'?'on':''}">용면 방면</button></div>`:''}
+    <div>${up.length?up.map(x=>row(x,false)).join(''):'<div class="empty-s">남은 버스가 없어요</div>'}</div>
+    ${past.length?(state.showPast?`<div>${past.map(x=>row(x,true)).join('')}</div>`:`<button class="more" id="sp">지나간 버스 ${past.length}대 보기</button>`):''}
+    <p class="note">통과 시각은 출발 시각과 소요시간을 정류장 순서로 나눠 계산한 <b>추정치</b>예요. 여유 있게 미리 나가 계세요.</p>
+  </div>`;
+  el.querySelectorAll('.seg button').forEach(b=>b.onclick=()=>{state.filter=b.dataset.f;render()});
+  if($('sp')) $('sp').onclick=()=>{state.showPast=true;render()};
+}
+
+function renderRoutes(){
+  const stop=(!state.editing&&state.stop)||null, now=nowMin();
+  $('allTitle').textContent=stop?'전체 노선 · 해당 없는 정보는 흐리게 표시돼요':'전체 노선';
+  $('routes').innerHTML=ROUTES.map(r=>{
+    const any=stop&&r.dirs.some(d=>dirServes(d,stop));
+    return `<div class="route ${stop&&!any?'dim':''}">
+      <div class="route-h"><span class="rb" style="background:${r.color}">${r.id}</span><b>담양터미널 ↔ ${r.name}</b><small>약 ${r.dirs[0].dur}분</small></div>
+      ${r.dirs.map(d=>{
+        const ok=stop&&dirServes(d,stop), myIdx=stop?d.stops.indexOf(stop):-1;
+        const firstUp=ok?d.trips.map(tr=>board(d,tr,stop)).filter(m=>m!==null&&m>=now).sort((a,b)=>a-b)[0]:null;
+        const stops=d.stops.map((s,i)=>{
+          let c='';
+          if(ok&&s===stop) c='me';
+          else if(ok&&i<myIdx) c='passed';
+          else if(d.optional.includes(s)) c='opt';
+          else if(i===0||i===d.stops.length-1) c='end';
+          return `<span class="${c}">${esc(s)}</span>`}).join('<span class="sep">›</span>');
+        const times=d.trips.map(tr=>{
+          const via=tr.via.length?`<small>${tr.via.join('·')}</small>`:'';
+          if(!stop) return `<div class="t"><b>${tr.t}</b>${via}</div>`;
+          if(!ok) return `<div class="t"><b>${tr.t}</b>${via}</div>`;
+          const m=board(d,tr,stop);
+          if(m===null) return `<div class="t off"><b>${tr.t}</b><small>미경유</small></div>`;
+          const cls=m<now?'past':m===firstUp?'next':'go';
+          return `<div class="t ${cls}"><b>${tr.t}</b><small class="est">≈${fmt(m)}</small></div>`;
+        }).join('');
+        return `<div class="dir ${stop&&!ok&&any?'dim':''}">
+          <div class="dir-h">${esc(d.to)}행 <span class="tag">${towardLbl(d)}</span>${ok?'<span class="ok">탑승 가능</span>':''}</div>
+          <div class="stops">${stops}</div>
+          <div class="times">${times}</div>
+        </div>`}).join('')}
+    </div>`}).join('');
+}
+
+function render(){renderPick();renderResult();renderRoutes()}
+render();
+setInterval(()=>{if(!state.editing){renderResult();renderRoutes()}},30000);
+</script>
+</body>
+</html>
