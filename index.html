@@ -193,7 +193,7 @@ ROUTES.forEach(r=>r.dirs.forEach(d=>{
   d.route=r; d.optional=d.optional||[];
   d.trips=d.times.map(x=>Array.isArray(x)?{t:x[0],via:x.slice(1)}:{t:x,via:[]});
 }));
-const POPULAR=[T,'죽녹원','관방제림','전남도립대','용면소재지','추월산','가마골'];
+const POPULAR=['두장리입구',T,'죽녹원','관방제림','전남도립대','용면소재지','추월산','가마골'];
 const ALL_STOPS=[...new Set(ROUTES.flatMap(r=>r.dirs.flatMap(d=>d.stops)))];
 
 /* ───────── 계산 ───────── */
