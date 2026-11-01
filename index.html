@@ -16,7 +16,7 @@
   *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
   html,body{margin:0}
   body{background:var(--bg);color:var(--ink);font-family:"Pretendard Variable",Pretendard,-apple-system,"Apple SD Gothic Neo","Noto Sans KR","Malgun Gothic",sans-serif;
-    -webkit-font-smoothing:antialiased;letter-spacing:-.01em;line-height:1.45}
+    -webkit-font-smoothing:antialiased;letter-spacing:-.01em;line-height:1.45;word-break:keep-all}
   button{font:inherit;color:inherit;border:0;background:none;cursor:pointer;padding:0}
   .app{max-width:560px;margin:0 auto;padding:20px 16px 56px}
 
@@ -61,6 +61,11 @@
   .hero .line{display:flex;align-items:center;gap:8px;font-size:16px;font-weight:600;flex-wrap:wrap}
   .hero .line .rb{background:rgba(255,255,255,.22);border-radius:7px;padding:1px 8px;font-weight:700}
   .hero .meta{font-size:13.5px;opacity:.85;margin-top:12px;padding-top:12px;border-top:1px solid rgba(255,255,255,.2)}
+  .hero .warn{display:flex;gap:8px;align-items:flex-start;margin-top:12px;background:rgba(255,255,255,.16);border-radius:12px;padding:10px 12px;font-size:13px;font-weight:500;line-height:1.45}
+  .hero .warn svg{flex:none;margin-top:1px}
+  .hero.none .warn{background:var(--orange-l);color:#B5541A}
+  .warnbox{display:flex;gap:8px;align-items:flex-start;background:var(--orange-l);color:#B5541A;border-radius:12px;padding:12px 14px;font-size:13px;font-weight:500;line-height:1.5;margin-top:12px}
+  .warnbox svg{flex:none;margin-top:1px}
   .hero.none{background:var(--card);color:var(--ink)}
   .hero.none .lbl{color:var(--mute);opacity:1}
   .hero.none .big{font-size:26px}
@@ -220,6 +225,7 @@ const $=id=>document.getElementById(id);
 const esc=s=>s.replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const PIN='<svg width="22" height="22" viewBox="0 0 24 24" fill="#3182F6"><path d="M12 2a7 7 0 0 0-7 7c0 5.2 7 13 7 13s7-7.8 7-13a7 7 0 0 0-7-7Zm0 9.5A2.5 2.5 0 1 1 12 6.5a2.5 2.5 0 0 1 0 5Z"/></svg>';
 
+const WARN='<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2 1 21h22L12 2Zm0 6c.6 0 1 .4 1 1v5a1 1 0 1 1-2 0V9c0-.6.4-1 1-1Zm0 11a1.2 1.2 0 1 1 0-2.4 1.2 1.2 0 0 1 0 2.4Z"/></svg>';
 function renderPick(){
   const c=$('pickCard');
   if(state.stop && !state.editing){
@@ -276,6 +282,7 @@ function renderResult(){
       <div class="big">${left===0?'곧 도착':left<60?left+'<span>분 후</span>':Math.floor(left/60)+'<span>시간 </span>'+(left%60?(left%60)+'<span>분 후</span>':'<span>후</span>')}</div>
       <div class="line"><span class="rb">${n.d.route.id}</span>${esc(n.d.to)}행 · 약 ${fmt(n.m)} 통과</div>
       <div class="meta">${n.d.stops[0]===T?'담양터미널':esc(n.d.stops[0])} ${n.tr.t} 출발${n.tr.via.length?` · ${n.tr.via.join('·')} 경유`:''}</div>
+      <div class="warn">${WARN}<span>실시간 정보가 아니에요. 시간표를 바탕으로 단순 계산한 예상 시각이라 실제와 다를 수 있으니, 5~10분 먼저 정류장에 나가 계세요.</span></div>
     </div>`
     :`<div class="hero none"><div class="lbl">다음 버스</div><div class="big">오늘 운행이 끝났어요</div>
       <div class="meta">${all.length?`첫차는 ${all[0].d.route.id} ${esc(all[0].d.to)}행, 약 ${fmt(all[0].m)}이에요`:'이 정류장에서 출발하는 버스가 없어요 (종점 하차만 가능)'}</div></div>`;
@@ -295,7 +302,7 @@ function renderResult(){
       <button data-f="Y" class="${state.filter==='Y'?'on':''}">용면 방면</button></div>`:''}
     <div>${up.length?up.map(x=>row(x,false)).join(''):'<div class="empty-s">남은 버스가 없어요</div>'}</div>
     ${past.length?(state.showPast?`<div>${past.map(x=>row(x,true)).join('')}</div>`:`<button class="more" id="sp">지나간 버스 ${past.length}대 보기</button>`):''}
-    <p class="note">통과 시각은 출발 시각과 소요시간을 정류장 순서로 나눠 계산한 <b>추정치</b>예요. 여유 있게 미리 나가 계세요.</p>
+    <div class="warnbox">${WARN}<span><b>실시간 도착 정보가 아니에요.</b> 표시된 시각은 출발 시각과 소요시간을 정류장 순서로 나눠 단순 계산한 예상치예요. 교통 상황에 따라 더 일찍 오거나 늦을 수 있으니 미리 준비해 주세요. 실시간 위치는 <a href="http://bis.damyang.go.kr" target="_blank" rel="noopener" style="color:inherit;font-weight:700">담양군 BIS</a>에서 확인할 수 있어요.</span></div>
   </div>`;
   el.querySelectorAll('.seg button').forEach(b=>b.onclick=()=>{state.filter=b.dataset.f;render()});
   if($('sp')) $('sp').onclick=()=>{state.showPast=true;render()};
